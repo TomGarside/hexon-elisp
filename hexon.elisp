@@ -1,0 +1,27 @@
+(setq original-buff (buffer-name))
+(setq new-buff (concat original-buff "-hexon"))
+
+(generate-new-buffer new-buff)
+
+(generate-new-buffer original-buff
+    (goto-char (point-min))
+    (while (not (eobp))
+        (setq processed-line (thing-at-point 'line))
+        (setq hex-vals
+            (mapcar (lambda (arg) (format "%x" arg)) processed-line))
+        (setq out-lines
+            (concat
+                (make-string (length processed-line) ?-) "\n"
+                (format "%0s" (mapcar (lambda (arg) (if (> (length arg) 1) (substring arg 0 1) "0")) hex-vals)) "\n"
+                (format "%0s" (mapcar (lambda (arg) (if (> (length arg) 1) (substring arg 1 2) (substring arg 0 1))) hex-vals)) "\n"
+                (make-string (length processed-line) ?-) "\n"
+            )
+        )
+        (with-current-buffer new-buff
+            (insert (propertize (replace-regexp-in-string "[    ]" " " processed-line) 'face 'message-header-newsgroups))
+            (insert (propertize (replace-regexp-in-string "[ ()]" "" out-lines) 'face 'custom-state))
+        )
+        (forward-line 1)
+    )
+    (switch-to-buffer new-buff)
+)
